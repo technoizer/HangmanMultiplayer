@@ -1,0 +1,7 @@
+program
+table
+java
+superfluous
+terrific
+tragedy
+humor
