@@ -215,13 +215,11 @@ public class client extends javax.swing.JFrame {
             ois = new ObjectInputStream(server.getInputStream());
             this.trdClient = new threadReadClient(this, server, ois, this.msgPool);
             this.trdClient.start();
-            command.CommandList baru = new command.CommandList();
 
+            command.CommandList baru = new command.CommandList();
             baru.setCommand("START");
             oos.writeObject(baru);
             oos.flush();
-            //StartGame();
-            System.out.println(getCurrentWord() + "haha");
 
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Server sedang offline");
@@ -262,14 +260,25 @@ public class client extends javax.swing.JFrame {
             //	put it in dashes where it belongs
             matchLetter(secret, dashes, letter, words);
         }
-        System.out.println(bodyparts + " bodyparts are left");
+        //System.out.println(bodyparts + " bodyparts are left");
         if (bodyparts == 0) {
             System.out.println("you lose");
-            done = true;
         }
         if (secret.equals(dashes.toString())) {
-            System.out.println("you win!");
-            done = true;
+            try {
+                System.out.println("you win!");
+                command.CommandList baru = new command.CommandList();
+                baru.setCommand("FIN");
+                ArrayList<String> detail = new ArrayList<>();
+                detail.add(dashes.toString());
+                detail.add(uname.getText());
+                baru.setCommandDetails(detail);
+                oos.writeObject(baru);
+                oos.flush();
+                oos.reset();
+            } catch (IOException ex) {
+                Logger.getLogger(client.class.getName()).log(Level.SEVERE, null, ex);
+            }
         }
         guessText.setText("");
     }//GEN-LAST:event_guessBtnActionPerformed
@@ -331,6 +340,7 @@ public class client extends javax.swing.JFrame {
             }
         });
     }
+// <editor-fold defaultstate="collapsed" desc="Fungsi Untuk Mencocokkan Huruf">
 
     public static void matchLetter(String secret, StringBuffer dashes, char letter, JLabel words) {
         for (int index = 0; index < secret.length(); index++) {
@@ -338,18 +348,25 @@ public class client extends javax.swing.JFrame {
                 dashes.setCharAt(index, letter);
             }
         }
-        System.out.print("good guess - ");
+        //System.out.print("good guess - ");
         words.setText(dashes.toString());
     }
+// </editor-fold>
 
+// <editor-fold defaultstate="collapsed" desc="Fungsi Untuk Membuat Titik Kosong dari Kata Terpilih">    
     public static StringBuffer makeDashes(String s) {
         StringBuffer dashes = new StringBuffer(s.length());
         for (int count = 0; count < s.length(); count++) {
-            dashes.append('-');
+            if ((s.charAt(count)) == ' ') 
+                dashes.append(' ');
+            else 
+                dashes.append('-');
         }
         return dashes;
     }
+// </editor-fold>
 
+// <editor-fold defaultstate="collapsed" desc="Fungsi Untuk Memulai Game Baru"> 
     public void StartGame() {
         secret = getCurrentWord();
         guesses = "";
@@ -360,6 +377,7 @@ public class client extends javax.swing.JFrame {
         words.setText(dashes.toString());
         img.setIcon(new javax.swing.ImageIcon(getClass().getResource("/client/img/1.png")));
     }
+// </editor-fold>
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton connBtn;

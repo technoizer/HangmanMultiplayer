@@ -36,9 +36,10 @@ public class threadClient implements Runnable {
     private FileInputStream fis = null;
     private FileOutputStream fos = null;
     private ArrayList<String> Recipient = new ArrayList<>();
-    private String currentWord = "penisriwahyu";
+    private threadServer server;
 
-    public threadClient(Socket sockcli, ArrayList<threadClient> t) {
+    public threadClient(threadServer server, Socket sockcli, ArrayList<threadClient> t) {
+        this.server = server;
         this.sockcli = sockcli;
         this.alThread = t;
         this.sa = this.sockcli.getRemoteSocketAddress();
@@ -64,14 +65,19 @@ public class threadClient implements Runnable {
                     if (recv instanceof command.CommandList) {
                         command.CommandList comm = (command.CommandList) recv;
                         msg = comm.getCommand();
-                        if (msg.equals("END"))
+                        if (msg.equals("END")) {
                             break;
-                        if (msg.equals("START")){
+                        }
+                        else if (msg.equals("START")) {
                             System.out.println("START");
-                            command.CommandList baru = new command.CommandList();
-                            baru.setCommand("WORDS");
-                            baru.setCommandDetails(currentWord);
-                            send(baru);
+                            sendWord();
+                        }
+                        else if (msg.equals("FIN")) {
+                            if (comm.getCommandDetails().get(0).equals(server.getCurrentWord())){
+                                System.out.println("FINISH " + comm.getCommandDetails().get(1));
+                                server.changeCurrentWord();
+                                updateWord();
+                            }
                         }
                     }
                 } catch (IOException ex) {
@@ -95,14 +101,17 @@ public class threadClient implements Runnable {
         for (int i = 0; i < this.alThread.size(); i++) {
             threadClient tc = this.alThread.get(i);
             tc.send(msg);
-            /*for (int j = 0; j < names.size(); j++) {
-                
-            }*/
         }
     }
     
-    public void send(Object msg)
-    {
+    public synchronized void updateWord() throws IOException {
+        for (int i = 0; i < this.alThread.size(); i++) {
+            threadClient tc = this.alThread.get(i);
+            tc.sendWord();
+        }
+    }
+
+    public void send(Object msg) {
         try {
             this.oos.writeObject(msg);
             this.oos.flush();
@@ -111,6 +120,16 @@ public class threadClient implements Runnable {
             Logger.getLogger(threadClient.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    public void sendWord() {
+        command.CommandList baru = new command.CommandList();
+        baru.setCommand("WORDS");
+        ArrayList<String> detail = new ArrayList<>();
+        detail.add(server.getCurrentWord());
+        baru.setCommandDetails(detail);
+        send(baru);
+    }
+
     /**
      * @return the sockcli
      */

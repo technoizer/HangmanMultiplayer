@@ -29,7 +29,6 @@ public class threadReadClient extends Thread {
         this.sock = sock;
         this.ois = ois;
         this.txtReceived = txtReceived;
-        this.currentWord = currentWord;
         this.parent = parent;
     }
 
@@ -40,13 +39,13 @@ public class threadReadClient extends Thread {
                 Object recv = ois.readObject();
                 if (recv instanceof Message) {
                     Message msg = (Message) recv;
-                    this.txtReceived.append(msg.getDari() + ":" + msg.getIsi() + "\n");
+                    this.txtReceived.append(msg.getDari() + ": " + msg.getIsi() + "\n");
                 } else if (recv instanceof command.CommandList) {
                     command.CommandList msg = (command.CommandList) recv;
                     if (msg.getCommand().equals("WORDS")) {
                         System.out.println("WORDS");
                         //this.currentWord = msg.getCommandDetails();
-                        parent.setCurrentWord(msg.getCommandDetails());
+                        parent.setCurrentWord(msg.getCommandDetails().get(0));
                         System.out.println(this.currentWord);
                         parent.StartGame();
                     }

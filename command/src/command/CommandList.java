@@ -7,6 +7,7 @@
 package command;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  *
@@ -14,7 +15,7 @@ import java.io.Serializable;
  */
 public class CommandList implements Serializable{
     private String command;
-    private String commandDetails;
+    private ArrayList<String> commandDetails;
 
     /**
      * @return the command
@@ -33,14 +34,14 @@ public class CommandList implements Serializable{
     /**
      * @return the commandDetails
      */
-    public String getCommandDetails() {
+    public ArrayList<String> getCommandDetails() {
         return commandDetails;
     }
 
     /**
      * @param commandDetails the commandDetails to set
      */
-    public void setCommandDetails(String commandDetails) {
+    public void setCommandDetails(ArrayList<String> commandDetails) {
         this.commandDetails = commandDetails;
     }
 }
