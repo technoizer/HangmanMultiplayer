@@ -34,7 +34,7 @@ public class threadClient implements Runnable {
     private ObjectInputStream ois = null;
     private final SocketAddress sa;
     private String username;
-    private String roomname;
+    private String roomname = "";
     private FileInputStream fis = null;
     private FileOutputStream fos = null;
     private ArrayList<String> Recipient = new ArrayList<>();
@@ -97,13 +97,14 @@ public class threadClient implements Runnable {
                         } 
                         else if (msg.equals("FIN")) {
                             if (comm.getCommandDetails().get(0).equals(server.getCurrentWord(getRoomname()))) {
+                                server.tS.countAll.put(roomname, 30);
                                 System.out.println("FINISH " + comm.getCommandDetails().get(1));
                                 server.changeCurrentWord(getRoomname());
                                 updateWord(getRoomname());
                                 Message notif = new Message();
                                 notif.setDari("Pemberitahuan");
                                 this.score += 10;
-                                notif.setIsi(comm.getCommandDetails().get(1) + " Menang" + score);
+                                notif.setIsi(comm.getCommandDetails().get(1) + " Menang");
                                 System.out.println(username+' '+score);
                                 sendMultiple(notif, getRoomname());
                                 baru.setCommand("SCORE");
@@ -168,7 +169,7 @@ public class threadClient implements Runnable {
         baru.setCommand("WORDS");
         ArrayList<String> detail = new ArrayList<>();
         detail.add(server.getCurrentWord(getRoomname()));
-        detail.add((Integer.toString(server.tS.getCount())));
+        detail.add((Integer.toString(server.tS.countAll.get(roomname))));
         baru.setCommandDetails(detail);
         send(baru);
     }

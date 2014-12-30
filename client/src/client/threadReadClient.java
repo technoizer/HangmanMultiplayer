@@ -28,14 +28,16 @@ public class threadReadClient extends Thread {
     private client parent;
     private JComboBox room;
     private JLabel scoring;
+    private JLabel waktu;
 
-    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room, JLabel scoring) {
+    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room, JLabel scoring, JLabel waktu) {
         this.sock = sock;
         this.ois = ois;
         this.txtReceived = txtReceived;
         this.parent = parent;
         this.room = room;
         this.scoring = scoring;
+        this.waktu = waktu;
     }
 
     @Override
@@ -55,6 +57,8 @@ public class threadReadClient extends Thread {
                         parent.setCurrentWord(msg.getCommandDetails().get(0));
                         System.out.println(this.currentWord);
                         parent.setCount(Integer.parseInt(msg.getCommandDetails().get(1)));
+                        System.out.println(msg.getCommandDetails().get(1));
+                        this.waktu.setText(msg.getCommandDetails().get(1));
                         parent.StartGame();
                     }
                     if (msg.getCommand().equals("ROOMLIST")){

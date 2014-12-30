@@ -6,6 +6,7 @@
 
 package server;
 
+import java.util.HashMap;
 import java.util.TimerTask;
 import java.util.Timer;
 
@@ -15,16 +16,20 @@ import java.util.Timer;
  */
 public class threadSoal extends Thread{
     threadServer tS;
-    private int count;
+    public HashMap <String,Integer> countAll = new HashMap<>();
     public Timer baru;
     
     @Override
     public void run(){
+        for(int i=0; i<tS.roomList.size(); i++){
+            countAll.put(tS.roomList.get(i),30);
+        }
+        //System.out.println(countAll.get("Software"));
         startWaktu();
     }
     public void startWaktu(){
         baru = new Timer();
-        baru.schedule(new SayHello(this), 0,1000);
+        baru.schedule(new SayHello(this,countAll), 0,1000);
     }
     
     public threadSoal(threadServer tSr){
@@ -33,35 +38,29 @@ public class threadSoal extends Thread{
     /**
      * @return the count
      */
-    public int getCount() {
-        return count;
-    }
-
-    /**
-     * @param count the count to set
-     */
-    public void setCount(int count) {
-        this.count = count;
-    }
 }
 
 class SayHello extends TimerTask {
     private threadSoal t;
-    SayHello(threadSoal t){
+    private HashMap<String,Integer> baru = new HashMap<String, Integer>();
+    SayHello(threadSoal t, HashMap<String,Integer> baru){
         this.t = t;
+        this.baru = baru;
     }
     public void run() {
-        if(t.getCount() == 30){
-            t.setCount(0);
-            for(int i=0; i<t.tS.roomList.size(); i++){
+       
+        for(int i=0; i<t.tS.roomList.size(); i++){
+            if ((baru.get(t.tS.roomList.get(i))) == 0){
+                baru.put(t.tS.roomList.get(i),30);
                 t.tS.changeCurrentWord(t.tS.roomList.get(i));
                 t.tS.sendWord(t.tS.roomList.get(i));
             }
-            
-            //System.out.println("send word dari thread soal");
         }
-        System.out.println(t.getCount());
-        t.setCount(t.getCount()+1);
+        System.out.println(baru.get("Software"));
+        for(int i=0; i<t.tS.roomList.size(); i++){
+            baru.put(t.tS.roomList.get(i), baru.get(t.tS.roomList.get(i))-1);
+        }
+        //t.setCount(t.getCount()+1);
         
     }
  }

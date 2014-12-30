@@ -41,9 +41,6 @@ public class threadServer extends Thread {
     @Override
     public void run() {
         try {
-            tS = new threadSoal(this);
-            Thread threadtS = new Thread(tS);
-            threadtS.start();
             infile = new Scanner(new File("sets/roomName.txt"));
             while(infile.hasNextLine()){
                 String tmp = infile.nextLine();
@@ -51,7 +48,9 @@ public class threadServer extends Thread {
                 getRoomList().add(tmp);
                 wordBank.put(tmp, tmp1);
             }
-            
+            tS = new threadSoal(this);
+            Thread threadtS = new Thread(tS);
+            threadtS.start();
             System.out.println("start");
             infile = new Scanner(new File("sets/hangWordsSoftware.txt"));
             while (infile.hasNextLine()){

@@ -56,6 +56,7 @@ public class client extends javax.swing.JFrame {
     private boolean isConnected;
     private int count;
     public Timer baru;
+    public boolean flag = false;
     /**
      *
      */
@@ -76,6 +77,8 @@ public class client extends javax.swing.JFrame {
                 System.exit( 0 );  
             }  
         });
+        baru = new Timer();
+        baru.schedule(new SayHello(this,waktu), 0,1000);
     }
 
     /**
@@ -324,13 +327,11 @@ public class client extends javax.swing.JFrame {
     }
     private void connTo(){
         try {
-            baru = new Timer();
-            baru.schedule(new SayHello(this,waktu), 0,1000);
             server = new Socket(servname.getText(), 6060);
             bos = new BufferedOutputStream(server.getOutputStream());
             oos = new ObjectOutputStream(server.getOutputStream());
             ois = new ObjectInputStream(server.getInputStream());
-            this.trdClient = new threadReadClient(this, server, ois, this.msgPool, this.room, this.scoring);
+            this.trdClient = new threadReadClient(this, server, ois, this.msgPool, this.room, this.scoring, this.waktu);
             this.trdClient.start();
             
             
@@ -354,6 +355,7 @@ public class client extends javax.swing.JFrame {
             setEnObject(false);
             room.removeAllItems();
             connBtn.setText("Connect");
+            flag = false;
         }
         else{
             connTo();
@@ -423,7 +425,7 @@ public class client extends javax.swing.JFrame {
         detail.add((String) room.getSelectedItem());
         baru.setCommandDetails(detail);
         send(baru);
-        
+        flag = true;
     }//GEN-LAST:event_enterroomActionPerformed
 
     /**
@@ -573,12 +575,13 @@ class SayHello extends TimerTask {
         this.j = j;
     }
     public void run() {
-        if(t.getCount() == 30){
-            t.setCount(-1);
+        if(t.getCount() == 0){
+            t.setCount(30);
         }
-        System.out.println(t.getCount());
-        j.setText(Integer.toString(t.getCount()));
-        t.setCount(t.getCount()+1);
+        //System.out.println(t.getCount());
+        if(t.flag)
+            j.setText(Integer.toString(t.getCount()));
+        t.setCount(t.getCount()-1);
         
     }
  }
