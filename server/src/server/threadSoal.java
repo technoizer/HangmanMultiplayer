@@ -18,7 +18,7 @@ public class threadSoal extends Thread{
     threadServer tS;
     public HashMap <String,Integer> countAll = new HashMap<>();
     public Timer baru;
-    
+    public Timer updatelist;
     @Override
     public void run(){
         for(int i=0; i<tS.roomList.size(); i++){
@@ -26,10 +26,15 @@ public class threadSoal extends Thread{
         }
         //System.out.println(countAll.get("Software"));
         startWaktu();
+        
     }
     public void startWaktu(){
         baru = new Timer();
         baru.schedule(new SayHello(this,countAll), 0,1000);
+    }
+    public void startUpdate(){
+        updatelist = new Timer();
+        updatelist.schedule(new update(this), 0,10000);
     }
     
     public threadSoal(threadServer tSr){
@@ -63,5 +68,15 @@ class SayHello extends TimerTask {
         //t.setCount(t.getCount()+1);
         
     }
+    
  }
 
+class update extends TimerTask {
+    private threadSoal t;
+    update(threadSoal t){
+        this.t = t;
+    }
+    public void run() {
+        t.tS.updateUserList();
+    }    
+ }

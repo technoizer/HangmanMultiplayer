@@ -30,7 +30,7 @@ public class threadClient implements Runnable {
     private final ArrayList<threadClient> alThread;
     private DataInputStream dis = null;
     private DataOutputStream dos = null;
-    private ObjectOutputStream oos = null;
+    public ObjectOutputStream oos = null;
     private ObjectInputStream ois = null;
     private final SocketAddress sa;
     private String username;
@@ -39,6 +39,7 @@ public class threadClient implements Runnable {
     private FileOutputStream fos = null;
     private ArrayList<String> Recipient = new ArrayList<>();
     private threadServer server;
+    public boolean flag = false;
     private int score;
     public threadClient(threadServer server, Socket sockcli, ArrayList<threadClient> t) {
         this.server = server;
@@ -70,7 +71,8 @@ public class threadClient implements Runnable {
                         msg = comm.getCommand();
 
                         command.CommandList baru = new CommandList();
-                        if (msg.equals("END")) {
+                        if (msg.equals("END")) {    
+                            //server.updateUserList();
                             break;
                         } 
                         else if (msg.equals("START")) {
@@ -116,9 +118,12 @@ public class threadClient implements Runnable {
                         }
                         
                         else if(msg.equals("RNAME")){
+                            String oldroomname = getRoomname();
+                            if (oldroomname == "") oldroomname = "KOSONG";
                             setRoomname(comm.getCommandDetails().get(0));
                             System.out.println("set" + username + "room" + getRoomname());
                             sendWord();
+                            server.updateUserList();
                         }
                     }
                 } catch (IOException ex) {
@@ -127,9 +132,13 @@ public class threadClient implements Runnable {
                     Logger.getLogger(threadClient.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
-            ois.close();
-            oos.close();
-            getSockcli().close();
+            synchronized (this.oos){
+                oos.close();
+                ois.close();
+            }
+            synchronized (this.sockcli){
+                getSockcli().close();
+            }
             synchronized (this.alThread) {
                 this.alThread.remove(this);
             }

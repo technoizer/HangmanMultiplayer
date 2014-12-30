@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JTextArea;
 
 /**
@@ -29,8 +30,9 @@ public class threadReadClient extends Thread {
     private JComboBox room;
     private JLabel scoring;
     private JLabel waktu;
+    private JTextArea list;
 
-    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room, JLabel scoring, JLabel waktu) {
+    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room, JLabel scoring, JLabel waktu, JTextArea list) {
         this.sock = sock;
         this.ois = ois;
         this.txtReceived = txtReceived;
@@ -38,6 +40,7 @@ public class threadReadClient extends Thread {
         this.room = room;
         this.scoring = scoring;
         this.waktu = waktu;
+        this.list = list;
     }
 
     @Override
@@ -76,6 +79,13 @@ public class threadReadClient extends Thread {
                     if(msg.getCommand().equals("SCORE")){
                         this.scoring.setText(msg.getCommandDetails().get(0));
                         System.out.println(msg.getCommandDetails().get(0));
+                    }
+                    
+                    if(msg.getCommand().equals("LIST")){
+                        this.list.setText("");
+                        for(int i=0;i<msg.getCommandDetails().size();i++){
+                            this.list.append(msg.getCommandDetails().get(i)+"\n");
+                        }
                     }
                 }
             }

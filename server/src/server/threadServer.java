@@ -5,6 +5,7 @@
  */
 package server;
 
+import command.CommandList;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -131,5 +132,28 @@ public class threadServer extends Thread {
             if(msg.equals(alThread.get(i).getRoomname()))
                 alThread.get(i).sendWord();
         }
+    }
+      
+    public void updateUserList(){
+        for(int i = 0; i<roomList.size();i++){
+            ArrayList<String> iya = new ArrayList<>();
+            for(int j=0;j<alThread.size();j++){
+                if(alThread.get(j).getRoomname().equals(roomList.get(i))){
+                    synchronized (alThread.get(i).getSockcli()){
+                        iya.add(alThread.get(j).getUsername());
+                    }
+                }
+            }
+            
+            command.CommandList baru = new CommandList();
+            baru.setCommand("LIST");
+            baru.setCommandDetails(iya);
+            for(int k=0;k<alThread.size();k++){
+                if(alThread.get(k).getRoomname().equals(roomList.get(i))){
+                    alThread.get(k).send(baru);
+                }
+            }
+        }
+        
     }
 }
