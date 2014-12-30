@@ -12,6 +12,7 @@ import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComboBox;
+import javax.swing.JLabel;
 import javax.swing.JTextArea;
 
 /**
@@ -26,13 +27,15 @@ public class threadReadClient extends Thread {
     private String currentWord;
     private client parent;
     private JComboBox room;
+    private JLabel scoring;
 
-    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room) {
+    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room, JLabel scoring) {
         this.sock = sock;
         this.ois = ois;
         this.txtReceived = txtReceived;
         this.parent = parent;
         this.room = room;
+        this.scoring = scoring;
     }
 
     @Override
@@ -63,6 +66,11 @@ public class threadReadClient extends Thread {
                     
                     if (msg.getCommand().equals("EXIST")){
                         parent.disconFrom();
+                    }
+                    
+                    if(msg.getCommand().equals("SCORE")){
+                        this.scoring.setText(msg.getCommandDetails().get(0));
+                        System.out.println(msg.getCommandDetails().get(0));
                     }
                 }
             }

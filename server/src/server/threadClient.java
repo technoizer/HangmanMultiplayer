@@ -39,12 +39,13 @@ public class threadClient implements Runnable {
     private FileOutputStream fos = null;
     private ArrayList<String> Recipient = new ArrayList<>();
     private threadServer server;
-
+    private int score;
     public threadClient(threadServer server, Socket sockcli, ArrayList<threadClient> t) {
         this.server = server;
         this.sockcli = sockcli;
         this.alThread = t;
         this.sa = this.sockcli.getRemoteSocketAddress();
+        this.score = 0;
     }
 
     @Override
@@ -89,6 +90,7 @@ public class threadClient implements Runnable {
                                 baru.setCommand("ROOMLIST");
                                 baru.setCommandDetails(server.getRoomList());
                                 send(baru);
+                                
                             }
 
                             //sendWord();-- ke setelah 
@@ -98,6 +100,17 @@ public class threadClient implements Runnable {
                                 System.out.println("FINISH " + comm.getCommandDetails().get(1));
                                 server.changeCurrentWord(roomname);
                                 updateWord(roomname);
+                                Message notif = new Message();
+                                notif.setDari("Pemberitahuan");
+                                this.score += 10;
+                                notif.setIsi(comm.getCommandDetails().get(1) + " Menang" + score);
+                                System.out.println(username+' '+score);
+                                sendMultiple(notif, roomname);
+                                baru.setCommand("SCORE");
+                                ArrayList<String> s = new ArrayList();
+                                s.add(score+"");
+                                baru.setCommandDetails(s);
+                                send(baru);
                             }
                         }
                         
