@@ -11,9 +11,11 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.util.Pair;
 
 /**
  *
@@ -24,10 +26,12 @@ public class threadServer extends Thread {
     public ServerSocket server = null;
     public Socket client = null;
     private final ArrayList<threadClient> alThread;
-    private String currentWord;
     Scanner infile;
-    private ArrayList<String> wordBank = new ArrayList<String>();
-
+    private ArrayList<String> roomList = new ArrayList<>();
+    //private ArrayList<Pair <String,ArrayList>> wordBank = new ArrayList<>();
+    private HashMap<String, ArrayList<String>> wordBank = new HashMap<>();
+    private HashMap<String, String> currentWord = new HashMap<>();
+    
     public threadServer(ArrayList<threadClient> t, ServerSocket s) {
         server = s;
         this.alThread = t;
@@ -36,12 +40,36 @@ public class threadServer extends Thread {
     @Override
     public void run() {
         try {
-            System.out.println("start");
-            infile = new Scanner(new File("sets/hangWords.txt"));
-            while (infile.hasNextLine()){
-                wordBank.add(infile.nextLine());
+            infile = new Scanner(new File("sets/roomName.txt"));
+            while(infile.hasNextLine()){
+                String tmp = infile.nextLine();
+                ArrayList<String> tmp1 = new ArrayList<>();
+                getRoomList().add(tmp);
+                wordBank.put(tmp, tmp1);
             }
-            changeCurrentWord();
+            
+            System.out.println("start");
+            infile = new Scanner(new File("sets/hangWordsSoftware.txt"));
+            while (infile.hasNextLine()){
+                wordBank.get("Software").add(infile.nextLine());
+            }
+            infile = new Scanner(new File("sets/hangWordsHewan.txt"));
+            while (infile.hasNextLine()){
+                wordBank.get("Hewan").add(infile.nextLine());
+            }
+            infile = new Scanner(new File("sets/hangWordsMakanan.txt"));
+            while (infile.hasNextLine()){
+                wordBank.get("Makanan").add(infile.nextLine());
+            }
+            infile = new Scanner(new File("sets/hangWordsBuah.txt"));
+            while (infile.hasNextLine()){
+                wordBank.get("Buah").add(infile.nextLine());
+            }
+            changeCurrentWord("Makanan");
+            changeCurrentWord("Buah");
+            changeCurrentWord("Hewan");
+            changeCurrentWord("Software");
+            
             try {
                 while (true) {
                     client = server.accept();
@@ -65,19 +93,33 @@ public class threadServer extends Thread {
     /**
      * @return the currentWord
      */
-    public String getCurrentWord() {
-        return currentWord;
+    public String getCurrentWord(String tmp) {
+        return currentWord.get(tmp);
     }
 
     /**
      * @param currentWord the currentWord to set
      */
-    public void setCurrentWord(String currentWord) {
-        this.currentWord = currentWord;
+    public void setCurrentWord(String currentWord, String tmp) {
+        this.currentWord.put(currentWord, tmp);
+    }
+    
+    public void changeCurrentWord(String katagori) {
+        int random = (int) (Math.random()*10000) % wordBank.get(katagori).size();
+        this.currentWord.put(katagori,wordBank.get(katagori).get(random));
     }
 
-    public void changeCurrentWord() {
-        int random = (int) (Math.random()*10000) % wordBank.size();
-        this.currentWord = wordBank.get(random);
+    /**
+     * @return the roomList
+     */
+    public ArrayList<String> getRoomList() {
+        return roomList;
+    }
+
+    /**
+     * @param roomList the roomList to set
+     */
+    public void setRoomList(ArrayList<String> roomList) {
+        this.roomList = roomList;
     }
 }

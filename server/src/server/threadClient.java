@@ -5,6 +5,7 @@
  */
 package server;
 
+import command.CommandList;
 import command.Message;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
@@ -33,6 +34,7 @@ public class threadClient implements Runnable {
     private ObjectInputStream ois = null;
     private final SocketAddress sa;
     private String username;
+    private String roomname;
     private FileInputStream fis = null;
     private FileOutputStream fos = null;
     private ArrayList<String> Recipient = new ArrayList<>();
@@ -60,24 +62,49 @@ public class threadClient implements Runnable {
                     recv = ois.readObject();
                     if (recv instanceof Message) {
                         Message baru = (Message) recv;
-                        sendMultiple(baru);
+                        sendMultiple(baru,roomname);
                     }
                     if (recv instanceof command.CommandList) {
                         command.CommandList comm = (command.CommandList) recv;
                         msg = comm.getCommand();
+
+                        command.CommandList baru = new CommandList();
                         if (msg.equals("END")) {
                             break;
-                        }
+                        } 
                         else if (msg.equals("START")) {
                             System.out.println("START");
-                            sendWord();
-                        }
-                        else if (msg.equals("FIN")) {
-                            if (comm.getCommandDetails().get(0).equals(server.getCurrentWord())){
-                                System.out.println("FINISH " + comm.getCommandDetails().get(1));
-                                server.changeCurrentWord();
-                                updateWord();
+                            boolean flagExist = false;
+                            for (int i = 0; i < alThread.size(); i++) {
+                                if (comm.getCommandDetails().get(0).equals(alThread.get(i).getUsername())) {
+                                    baru.setCommand("EXIST");
+                                    send(baru);
+                                    flagExist = true;
+                                    break;
+                                }
                             }
+
+                            if (flagExist == false) {
+                                username = comm.getCommandDetails().get(0);
+                                baru.setCommand("ROOMLIST");
+                                baru.setCommandDetails(server.getRoomList());
+                                send(baru);
+                            }
+
+                            //sendWord();-- ke setelah 
+                        } 
+                        else if (msg.equals("FIN")) {
+                            if (comm.getCommandDetails().get(0).equals(server.getCurrentWord(roomname))) {
+                                System.out.println("FINISH " + comm.getCommandDetails().get(1));
+                                server.changeCurrentWord(roomname);
+                                updateWord(roomname);
+                            }
+                        }
+                        
+                        else if(msg.equals("RNAME")){
+                            roomname = comm.getCommandDetails().get(0);
+                            System.out.println("set" + username + "room" + roomname);
+                            sendWord();
                         }
                     }
                 } catch (IOException ex) {
@@ -97,17 +124,19 @@ public class threadClient implements Runnable {
         }
     }
 
-    public synchronized void sendMultiple(Object msg) throws IOException {
+    public synchronized void sendMultiple(Object msg, String roomnamecari) throws IOException {
         for (int i = 0; i < this.alThread.size(); i++) {
             threadClient tc = this.alThread.get(i);
-            tc.send(msg);
+            if (tc.roomname.equals(roomnamecari))
+                tc.send(msg);
         }
     }
-    
-    public synchronized void updateWord() throws IOException {
+
+    public synchronized void updateWord(String roomnamecari) throws IOException {
         for (int i = 0; i < this.alThread.size(); i++) {
             threadClient tc = this.alThread.get(i);
-            tc.sendWord();
+            if (tc.roomname.equals(roomnamecari))
+                   tc.sendWord();
         }
     }
 
@@ -125,7 +154,7 @@ public class threadClient implements Runnable {
         command.CommandList baru = new command.CommandList();
         baru.setCommand("WORDS");
         ArrayList<String> detail = new ArrayList<>();
-        detail.add(server.getCurrentWord());
+        detail.add(server.getCurrentWord(roomname));
         baru.setCommandDetails(detail);
         send(baru);
     }
@@ -142,5 +171,12 @@ public class threadClient implements Runnable {
      */
     public void setSockcli(Socket sockcli) {
         this.sockcli = sockcli;
+    }
+
+    /**
+     * @return the username
+     */
+    public String getUsername() {
+        return username;
     }
 }
