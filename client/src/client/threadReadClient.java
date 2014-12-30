@@ -54,6 +54,7 @@ public class threadReadClient extends Thread {
                         //this.currentWord = msg.getCommandDetails();
                         parent.setCurrentWord(msg.getCommandDetails().get(0));
                         System.out.println(this.currentWord);
+                        parent.setCount(Integer.parseInt(msg.getCommandDetails().get(1)));
                         parent.StartGame();
                     }
                     if (msg.getCommand().equals("ROOMLIST")){

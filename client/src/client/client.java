@@ -17,6 +17,8 @@ import java.io.ObjectOutputStream;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JLabel;
@@ -52,7 +54,8 @@ public class client extends javax.swing.JFrame {
     private threadReadClient trdClient;
     private String currentWord;
     private boolean isConnected;
-
+    private int count;
+    public Timer baru;
     /**
      *
      */
@@ -104,6 +107,7 @@ public class client extends javax.swing.JFrame {
         jList1 = new javax.swing.JList();
         scoring = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        waktu = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -184,6 +188,8 @@ public class client extends javax.swing.JFrame {
 
         jLabel4.setText("SCORE:");
 
+        waktu.setText("0");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -214,8 +220,13 @@ public class client extends javax.swing.JFrame {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(room, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel4)
-                        .addGap(149, 149, 149)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel4)
+                                .addGap(149, 149, 149))
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addComponent(waktu)
+                                .addGap(18, 18, 18)))
                         .addComponent(enterroom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -251,7 +262,9 @@ public class client extends javax.swing.JFrame {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(enterroom))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(enterroom)
+                                    .addComponent(waktu)))
                             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                                 .addComponent(servname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addComponent(jLabel2))
@@ -311,7 +324,8 @@ public class client extends javax.swing.JFrame {
     }
     private void connTo(){
         try {
-            
+            baru = new Timer();
+            baru.schedule(new SayHello(this,waktu), 0,1000);
             server = new Socket("localhost", 6060);
             bos = new BufferedOutputStream(server.getOutputStream());
             oos = new ObjectOutputStream(server.getOutputStream());
@@ -365,6 +379,8 @@ public class client extends javax.swing.JFrame {
         //System.out.println(bodyparts + " bodyparts are left");
         if (bodyparts == 0) {
             System.out.println("you lose");
+            img.setIcon(new javax.swing.ImageIcon(getClass().getResource("/client/img/8.png")));
+            guessText.setEnabled(false);
         }
         if (secret.equals(dashes.toString())) {
             System.out.println("you win!");
@@ -479,6 +495,8 @@ public class client extends javax.swing.JFrame {
         System.out.println(secret);
         dashes = makeDashes(secret);
         words.setText(dashes.toString());
+        guessText.setEnabled(true);
+        
         img.setIcon(new javax.swing.ImageIcon(getClass().getResource("/client/img/1.png")));
     }
 // </editor-fold>
@@ -503,6 +521,7 @@ public class client extends javax.swing.JFrame {
     private javax.swing.JTextField sendText;
     private javax.swing.JTextField servname;
     private javax.swing.JTextField uname;
+    private javax.swing.JLabel waktu;
     private javax.swing.JLabel words;
     // End of variables declaration//GEN-END:variables
 
@@ -529,4 +548,37 @@ public class client extends javax.swing.JFrame {
             Logger.getLogger(client.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+
+    /**
+     * @return the count
+     */
+    public int getCount() {
+        return count;
+    }
+
+    /**
+     * @param count the count to set
+     */
+    public void setCount(int count) {
+        this.count = count;
+    }
 }
+
+class SayHello extends TimerTask {
+    private client t;
+    private JLabel j;
+    
+    SayHello(client t, JLabel j){
+        this.t = t;
+        this.j = j;
+    }
+    public void run() {
+        if(t.getCount() == 30){
+            t.setCount(-1);
+        }
+        System.out.println(t.getCount());
+        j.setText(Integer.toString(t.getCount()));
+        t.setCount(t.getCount()+1);
+        
+    }
+ }

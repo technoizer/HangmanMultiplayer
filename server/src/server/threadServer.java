@@ -27,10 +27,11 @@ public class threadServer extends Thread {
     public Socket client = null;
     private final ArrayList<threadClient> alThread;
     Scanner infile;
-    private ArrayList<String> roomList = new ArrayList<>();
+    public ArrayList<String> roomList = new ArrayList<>();
     //private ArrayList<Pair <String,ArrayList>> wordBank = new ArrayList<>();
     private HashMap<String, ArrayList<String>> wordBank = new HashMap<>();
     private HashMap<String, String> currentWord = new HashMap<>();
+    public threadSoal tS;
     
     public threadServer(ArrayList<threadClient> t, ServerSocket s) {
         server = s;
@@ -40,6 +41,9 @@ public class threadServer extends Thread {
     @Override
     public void run() {
         try {
+            tS = new threadSoal(this);
+            Thread threadtS = new Thread(tS);
+            threadtS.start();
             infile = new Scanner(new File("sets/roomName.txt"));
             while(infile.hasNextLine()){
                 String tmp = infile.nextLine();
@@ -121,5 +125,12 @@ public class threadServer extends Thread {
      */
     public void setRoomList(ArrayList<String> roomList) {
         this.roomList = roomList;
+    }
+    
+      public void sendWord(String msg){
+        for (int i = 0; i<alThread.size(); i++){
+            if(msg.equals(alThread.get(i).getRoomname()))
+                alThread.get(i).sendWord();
+        }
     }
 }

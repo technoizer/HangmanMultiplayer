@@ -63,7 +63,7 @@ public class threadClient implements Runnable {
                     recv = ois.readObject();
                     if (recv instanceof Message) {
                         Message baru = (Message) recv;
-                        sendMultiple(baru,roomname);
+                        sendMultiple(baru, getRoomname());
                     }
                     if (recv instanceof command.CommandList) {
                         command.CommandList comm = (command.CommandList) recv;
@@ -96,16 +96,16 @@ public class threadClient implements Runnable {
                             //sendWord();-- ke setelah 
                         } 
                         else if (msg.equals("FIN")) {
-                            if (comm.getCommandDetails().get(0).equals(server.getCurrentWord(roomname))) {
+                            if (comm.getCommandDetails().get(0).equals(server.getCurrentWord(getRoomname()))) {
                                 System.out.println("FINISH " + comm.getCommandDetails().get(1));
-                                server.changeCurrentWord(roomname);
-                                updateWord(roomname);
+                                server.changeCurrentWord(getRoomname());
+                                updateWord(getRoomname());
                                 Message notif = new Message();
                                 notif.setDari("Pemberitahuan");
                                 this.score += 10;
                                 notif.setIsi(comm.getCommandDetails().get(1) + " Menang" + score);
                                 System.out.println(username+' '+score);
-                                sendMultiple(notif, roomname);
+                                sendMultiple(notif, getRoomname());
                                 baru.setCommand("SCORE");
                                 ArrayList<String> s = new ArrayList();
                                 s.add(score+"");
@@ -115,8 +115,8 @@ public class threadClient implements Runnable {
                         }
                         
                         else if(msg.equals("RNAME")){
-                            roomname = comm.getCommandDetails().get(0);
-                            System.out.println("set" + username + "room" + roomname);
+                            setRoomname(comm.getCommandDetails().get(0));
+                            System.out.println("set" + username + "room" + getRoomname());
                             sendWord();
                         }
                     }
@@ -140,7 +140,7 @@ public class threadClient implements Runnable {
     public synchronized void sendMultiple(Object msg, String roomnamecari) throws IOException {
         for (int i = 0; i < this.alThread.size(); i++) {
             threadClient tc = this.alThread.get(i);
-            if (tc.roomname.equals(roomnamecari))
+            if (tc.getRoomname().equals(roomnamecari))
                 tc.send(msg);
         }
     }
@@ -148,7 +148,7 @@ public class threadClient implements Runnable {
     public synchronized void updateWord(String roomnamecari) throws IOException {
         for (int i = 0; i < this.alThread.size(); i++) {
             threadClient tc = this.alThread.get(i);
-            if (tc.roomname.equals(roomnamecari))
+            if (tc.getRoomname().equals(roomnamecari))
                    tc.sendWord();
         }
     }
@@ -167,7 +167,8 @@ public class threadClient implements Runnable {
         command.CommandList baru = new command.CommandList();
         baru.setCommand("WORDS");
         ArrayList<String> detail = new ArrayList<>();
-        detail.add(server.getCurrentWord(roomname));
+        detail.add(server.getCurrentWord(getRoomname()));
+        detail.add((Integer.toString(server.tS.getCount())));
         baru.setCommandDetails(detail);
         send(baru);
     }
@@ -191,5 +192,19 @@ public class threadClient implements Runnable {
      */
     public String getUsername() {
         return username;
+    }
+
+    /**
+     * @return the roomname
+     */
+    public String getRoomname() {
+        return roomname;
+    }
+
+    /**
+     * @param roomname the roomname to set
+     */
+    public void setRoomname(String roomname) {
+        this.roomname = roomname;
     }
 }
