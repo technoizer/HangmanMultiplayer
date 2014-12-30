@@ -11,6 +11,7 @@ import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JComboBox;
 import javax.swing.JTextArea;
 
 /**
@@ -24,12 +25,14 @@ public class threadReadClient extends Thread {
     private JTextArea txtReceived;
     private String currentWord;
     private client parent;
+    private JComboBox room;
 
-    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived) {
+    public threadReadClient(client parent, Socket sock, ObjectInputStream ois, JTextArea txtReceived, JComboBox room) {
         this.sock = sock;
         this.ois = ois;
         this.txtReceived = txtReceived;
         this.parent = parent;
+        this.room = room;
     }
 
     @Override
@@ -40,7 +43,8 @@ public class threadReadClient extends Thread {
                 if (recv instanceof Message) {
                     Message msg = (Message) recv;
                     this.txtReceived.append(msg.getDari() + ": " + msg.getIsi() + "\n");
-                } else if (recv instanceof command.CommandList) {
+                } 
+                else if (recv instanceof command.CommandList) {
                     command.CommandList msg = (command.CommandList) recv;
                     if (msg.getCommand().equals("WORDS")) {
                         System.out.println("WORDS");
@@ -48,6 +52,17 @@ public class threadReadClient extends Thread {
                         parent.setCurrentWord(msg.getCommandDetails().get(0));
                         System.out.println(this.currentWord);
                         parent.StartGame();
+                    }
+                    if (msg.getCommand().equals("ROOMLIST")){
+                        this.room.removeAllItems();
+                        for(int i=0;i<msg.getCommandDetails().size();i++){
+                            this.room.addItem(msg.getCommandDetails().get(i));
+                            System.out.println(msg.getCommandDetails());
+                        }
+                    }
+                    
+                    if (msg.getCommand().equals("EXIST")){
+                        parent.disconFrom();
                     }
                 }
             }

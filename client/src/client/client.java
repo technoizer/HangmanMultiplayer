@@ -10,7 +10,6 @@ import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -52,12 +51,28 @@ public class client extends javax.swing.JFrame {
     private Scanner infile;
     private threadReadClient trdClient;
     private String currentWord;
+    private boolean isConnected;
 
     /**
      *
      */
     public client() {
         initComponents();
+        room.removeAllItems();
+        setEnObject(false);
+        addWindowListener(new java.awt.event.WindowAdapter()   
+        {  
+            @Override
+            public void windowClosing( java.awt.event.WindowEvent e )   
+            {  
+                dispose();
+                if(isConnected == true){
+                    System.out.println("GOOD BYE");
+                    disconFrom();
+                }
+                System.exit( 0 );  
+            }  
+        });
     }
 
     /**
@@ -70,9 +85,7 @@ public class client extends javax.swing.JFrame {
     private void initComponents() {
 
         connBtn = new javax.swing.JButton();
-        diconnBtn = new javax.swing.JButton();
         img = new javax.swing.JLabel();
-        jButton1 = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         msgPool = new javax.swing.JTextArea();
         sendBtn = new javax.swing.JButton();
@@ -81,6 +94,14 @@ public class client extends javax.swing.JFrame {
         guessBtn = new javax.swing.JButton();
         words = new javax.swing.JLabel();
         uname = new javax.swing.JTextField();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        room = new javax.swing.JComboBox();
+        jLabel3 = new javax.swing.JLabel();
+        enterroom = new javax.swing.JButton();
+        servname = new javax.swing.JTextField();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jList1 = new javax.swing.JList();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -91,28 +112,15 @@ public class client extends javax.swing.JFrame {
             }
         });
 
-        diconnBtn.setText("Disconnect");
-        diconnBtn.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                diconnBtnActionPerformed(evt);
-            }
-        });
-
         img.setIcon(new javax.swing.ImageIcon(getClass().getResource("/client/img/1.png"))); // NOI18N
         img.setText("jLabel1");
 
-        jButton1.setText("chg");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-
+        msgPool.setEditable(false);
         msgPool.setColumns(20);
         msgPool.setRows(5);
         jScrollPane1.setViewportView(msgPool);
 
-        sendBtn.setText("send");
+        sendBtn.setText("Chat");
         sendBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sendBtnActionPerformed(evt);
@@ -131,7 +139,7 @@ public class client extends javax.swing.JFrame {
             }
         });
 
-        guessBtn.setText("guess");
+        guessBtn.setText("GuessIt");
         guessBtn.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 guessBtnActionPerformed(evt);
@@ -145,60 +153,113 @@ public class client extends javax.swing.JFrame {
 
         uname.setText("udin");
 
+        jLabel1.setText("Username");
+
+        jLabel2.setText("Server");
+
+        room.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        room.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                roomActionPerformed(evt);
+            }
+        });
+
+        jLabel3.setText("Room");
+
+        enterroom.setText("Enter Room");
+        enterroom.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                enterroomActionPerformed(evt);
+            }
+        });
+
+        servname.setText("localhost");
+
+        jScrollPane2.setViewportView(jList1);
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(uname, javax.swing.GroupLayout.PREFERRED_SIZE, 95, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jButton1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(connBtn)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(diconnBtn))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addComponent(guessText)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(guessBtn))
-                            .addComponent(img, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 353, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(words, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                            .addComponent(jLabel1)
+                            .addComponent(jLabel2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(uname)
+                            .addComponent(servname, javax.swing.GroupLayout.DEFAULT_SIZE, 153, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(connBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(words, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(img, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(guessText, javax.swing.GroupLayout.PREFERRED_SIZE, 176, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 17, Short.MAX_VALUE)
+                        .addComponent(guessBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 108, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 96, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 186, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(sendText)
+                                .addComponent(sendText, javax.swing.GroupLayout.PREFERRED_SIZE, 133, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(sendBtn)))))
+                                .addComponent(sendBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 66, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 205, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel3)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(room, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(183, 183, 183)
+                        .addComponent(enterroom, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(24, 24, 24)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(words, javax.swing.GroupLayout.PREFERRED_SIZE, 56, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(connBtn, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(words, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(0, 0, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel1)
+                            .addComponent(uname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(room, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(servname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel2)
+                            .addGroup(layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(enterroom)))
+                        .addGap(54, 54, 54)))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 264, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 242, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(sendText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(sendBtn)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(img, javax.swing.GroupLayout.PREFERRED_SIZE, 274, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(img, javax.swing.GroupLayout.PREFERRED_SIZE, 290, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 340, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(guessText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(guessBtn)
-                    .addComponent(sendBtn)
-                    .addComponent(sendText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(23, 23, 23)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(diconnBtn)
-                    .addComponent(connBtn)
-                    .addComponent(jButton1)
-                    .addComponent(uname, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(guessText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(guessBtn, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))))
                 .addContainerGap())
         );
 
@@ -206,45 +267,70 @@ public class client extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void connBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connBtnActionPerformed
+    
+    private void setEnObject(boolean parameter){
+        room.setEnabled(parameter);
+        msgPool.setEnabled(parameter);
+        sendBtn.setEnabled(parameter);
+        sendText.setEnabled(parameter);
+        img.setEnabled(parameter);
+        guessBtn.setEnabled(parameter);
+        guessText.setEnabled(parameter);
+        enterroom.setEnabled(parameter);
+    }
+    
+    public void disconFrom(){
+        try{
+            command.CommandList baru = new command.CommandList();
+            baru.setCommand("END");
+            send(baru);
+            ois.close();
+            oos.close();
+            server.close();
+            isConnected = false;
+            setEnObject(false);
+        }catch (IOException ex) {
+            JOptionPane.showMessageDialog(null, "Server sedang offline");
+        }
+    }
+    private void connTo(){
         try {
+            
             server = new Socket("localhost", 6060);
             bos = new BufferedOutputStream(server.getOutputStream());
             oos = new ObjectOutputStream(server.getOutputStream());
             ois = new ObjectInputStream(server.getInputStream());
-            this.trdClient = new threadReadClient(this, server, ois, this.msgPool);
+            this.trdClient = new threadReadClient(this, server, ois, this.msgPool, this.room);
             this.trdClient.start();
-
+            
+            
             command.CommandList baru = new command.CommandList();
             baru.setCommand("START");
-            oos.writeObject(baru);
-            oos.flush();
-
+            ArrayList<String> detail = new ArrayList<>();
+            detail.add(uname.getText());
+            baru.setCommandDetails(detail);
+            send(baru);
+            isConnected = true;
+            setEnObject(true);
+            
         } catch (IOException ex) {
             JOptionPane.showMessageDialog(null, "Server sedang offline");
         }
-
-    }//GEN-LAST:event_connBtnActionPerformed
-
-    private void diconnBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_diconnBtnActionPerformed
-        try {
-            command.CommandList baru = new command.CommandList();
-            baru.setCommand("END");
-            oos.writeObject(baru);
-            oos.flush();
-
-            ois.close();
-            oos.close();
-            server.close();
-        } catch (IOException ex) {
-            Logger.getLogger(client.class.getName()).log(Level.SEVERE, null, ex);
+    }
+    
+    private void connBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connBtnActionPerformed
+        if(isConnected){
+            disconFrom();
+            setEnObject(false);
+            room.removeAllItems();
+            connBtn.setText("Connect");
         }
-    }//GEN-LAST:event_diconnBtnActionPerformed
-
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        StartGame();
-    }//GEN-LAST:event_jButton1ActionPerformed
+        else{
+            connTo();
+            setEnObject(true);
+            connBtn.setText("Disconnect");
+        }
+    }//GEN-LAST:event_connBtnActionPerformed
 
     private void guessBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_guessBtnActionPerformed
         guess = guessText.getText();
@@ -265,20 +351,14 @@ public class client extends javax.swing.JFrame {
             System.out.println("you lose");
         }
         if (secret.equals(dashes.toString())) {
-            try {
-                System.out.println("you win!");
-                command.CommandList baru = new command.CommandList();
-                baru.setCommand("FIN");
-                ArrayList<String> detail = new ArrayList<>();
-                detail.add(dashes.toString());
-                detail.add(uname.getText());
-                baru.setCommandDetails(detail);
-                oos.writeObject(baru);
-                oos.flush();
-                oos.reset();
-            } catch (IOException ex) {
-                Logger.getLogger(client.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            System.out.println("you win!");
+            command.CommandList baru = new command.CommandList();
+            baru.setCommand("FIN");
+            ArrayList<String> detail = new ArrayList<>();
+            detail.add(dashes.toString());
+            detail.add(uname.getText());
+            baru.setCommandDetails(detail);
+            send(baru);
         }
         guessText.setText("");
     }//GEN-LAST:event_guessBtnActionPerformed
@@ -288,23 +368,31 @@ public class client extends javax.swing.JFrame {
     }//GEN-LAST:event_guessTextActionPerformed
 
     private void sendBtnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendBtnActionPerformed
-        try {
-            Message pesan = new Message();
-            pesan.setIsi(sendText.getText());
-            pesan.setDari(uname.getText());
-            oos.writeObject(pesan);
-            oos.flush();
-            oos.reset();
-
-            this.sendText.setText("");
-        } catch (IOException ex) {
-            Logger.getLogger(client.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        Message pesan = new Message();
+        pesan.setIsi(sendText.getText());
+        pesan.setDari(uname.getText());
+        send(pesan);
+        this.sendText.setText("");
     }//GEN-LAST:event_sendBtnActionPerformed
 
     private void sendTextActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendTextActionPerformed
         sendBtnActionPerformed(evt);
     }//GEN-LAST:event_sendTextActionPerformed
+
+    private void roomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_roomActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_roomActionPerformed
+
+    private void enterroomActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_enterroomActionPerformed
+        // TODO add your handling code here:
+        command.CommandList baru = new command.CommandList();
+        baru.setCommand("RNAME");
+        ArrayList<String> detail = new ArrayList<>();
+        detail.add((String) room.getSelectedItem());
+        baru.setCommandDetails(detail);
+        send(baru);
+        
+    }//GEN-LAST:event_enterroomActionPerformed
 
     /**
      * @param args the command line arguments
@@ -381,15 +469,21 @@ public class client extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton connBtn;
-    private javax.swing.JButton diconnBtn;
+    private javax.swing.JButton enterroom;
     private javax.swing.JButton guessBtn;
     private javax.swing.JTextField guessText;
     private javax.swing.JLabel img;
-    private javax.swing.JButton jButton1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JList jList1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea msgPool;
+    private javax.swing.JComboBox room;
     private javax.swing.JButton sendBtn;
     private javax.swing.JTextField sendText;
+    private javax.swing.JTextField servname;
     private javax.swing.JTextField uname;
     private javax.swing.JLabel words;
     // End of variables declaration//GEN-END:variables
@@ -406,5 +500,15 @@ public class client extends javax.swing.JFrame {
      */
     public void setCurrentWord(String currentWord) {
         this.currentWord = currentWord;
+    }
+    
+    public void send(Object Obj){
+        try {
+            oos.writeObject(Obj);
+            oos.flush();
+            oos.reset();
+        } catch (IOException ex) {
+            Logger.getLogger(client.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 }
