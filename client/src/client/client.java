@@ -320,8 +320,10 @@ public class client extends javax.swing.JFrame {
             oos.close();
             server.close();
             isConnected = false;
+            connBtn.setText("Connect");
             setEnObject(false);
         }catch (IOException ex) {
+            connBtn.setText("Disconnect");
             JOptionPane.showMessageDialog(null, "Server sedang offline");
         }
     }
@@ -342,9 +344,12 @@ public class client extends javax.swing.JFrame {
             baru.setCommandDetails(detail);
             send(baru);
             isConnected = true;
+            connBtn.setText("Disconnect");
             setEnObject(true);
             
         } catch (IOException ex) {
+            isConnected = false;
+            connBtn.setText("Connect");
             JOptionPane.showMessageDialog(null, "Server sedang offline");
         }
     }
@@ -354,13 +359,11 @@ public class client extends javax.swing.JFrame {
             disconFrom();
             setEnObject(false);
             room.removeAllItems();
-            connBtn.setText("Connect");
             flag = false;
         }
         else{
             connTo();
             setEnObject(true);
-            connBtn.setText("Disconnect");
         }
     }//GEN-LAST:event_connBtnActionPerformed
 
