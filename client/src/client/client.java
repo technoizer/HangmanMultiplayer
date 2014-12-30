@@ -326,7 +326,7 @@ public class client extends javax.swing.JFrame {
         try {
             baru = new Timer();
             baru.schedule(new SayHello(this,waktu), 0,1000);
-            server = new Socket("localhost", 6060);
+            server = new Socket(servname.getText(), 6060);
             bos = new BufferedOutputStream(server.getOutputStream());
             oos = new ObjectOutputStream(server.getOutputStream());
             ois = new ObjectInputStream(server.getInputStream());
